@@ -4,6 +4,7 @@
  */
 import { ChildProcess, spawn } from 'child_process';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 import {
@@ -163,6 +164,16 @@ function buildVolumeMounts(
     containerPath: '/home/node/.claude',
     readonly: false,
   });
+
+  // Mount dedicated agent SSH key (read-only) for Gitea access
+  const agentSshDir = path.join(os.homedir(), '.ssh', 'nanoclaw');
+  if (fs.existsSync(agentSshDir)) {
+    mounts.push({
+      hostPath: agentSshDir,
+      containerPath: '/home/node/.ssh',
+      readonly: true,
+    });
+  }
 
   // Per-group IPC namespace: each group gets its own IPC directory
   // This prevents cross-group privilege escalation via IPC
